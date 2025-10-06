@@ -1,0 +1,25 @@
+{   
+    "patient_path": "../../Data/Campanini_Maria_paz23",
+    "mesh_folder_path": "Data/paz23",
+
+    "volume_mesh": {    
+        "remesh_iterations_brain": 3,
+        "remesh_length_brain": 1.0,
+        "smoothen_iterations_brain": 5,
+        "smoothen_epsilon_brain": 0.7,
+        "remesh_iterations_tumor": 3,
+        "remesh_length_tumor": 1.0,
+        "smoothen_iterations_tumor": 5,
+        "smoothen_epsilon_tumor": 0.7,
+        "mesh_resolution": 16,
+        "characteristic_length": 10.0
+    },
+
+    "mesh_refinement": {
+        "refinement_iterations": 5,
+        "refinement_radius": 3.0,
+        "refinement_tag": 2,
+        "step_refinement": true
+    }
+
+}

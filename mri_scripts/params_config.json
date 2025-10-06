@@ -1,8 +1,0 @@
-{   
-    "patient_path": "Data",
-    "remesh_iterations": 3,
-    "remesh_target_length": 1.0,
-    "smoothen_iterations": 5,
-    "smoothen_epsilon": 0.7,
-    "volume_mesh_resolution": 16
-}
