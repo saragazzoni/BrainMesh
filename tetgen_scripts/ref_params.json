@@ -1,0 +1,36 @@
+{
+  "parameters": {
+     "h_ub": {
+      "value": 1.0,
+      "description": "Adaptation upper bound"
+    },
+     "h_lb": {
+      "value": 0.005,
+      "description": "Adaptation lower bound"
+    },
+    "sigma": {
+      "value": 5.0,
+      "description": "Width of the refinement function"
+    },
+    "Save_mesh_xdmf": {
+      "value": true,
+      "description": "Set to True to save each iteration of mesh adaptation as xdmf file (default: false)"
+    },
+    "Save_solution_xdmf": {
+      "value": true,
+      "description": "Set to True to save each time iteration of the solution as xdmf file (default: true)"
+    },
+    "Output_dir": {
+      "value": "paz23",
+      "description": "Set the directory to save and read the mesh ans solution files"
+    },
+    "mesh_filename": {
+      "value": "brain_tumor_adim",
+      "description": "Set the filename baseline to read the mesh files"
+    },
+    "tumor_tag": {
+      "value": 2,
+      "description": "Set the physical tag of the tumor region in the mesh"
+    }
+  }
+}

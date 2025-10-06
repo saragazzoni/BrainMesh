@@ -2,7 +2,7 @@ import surface_to_mesh as stm
 import json 
 import os
 
-with open('params_config.json', 'r') as f:
+with open('mri_scripts/params_config.json', 'r') as f:
     config = json.load(f)
 
 path = config["patient_path"]

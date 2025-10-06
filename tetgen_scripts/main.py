@@ -19,7 +19,6 @@ if __name__ == "__main__":
 
     parser = argparse.ArgumentParser(description="Run simulation")
     parser.add_argument("name_file", type=str, help="Path to parameters file")
-    parser.add_argument("output_dir", type=str, help="Name of the output directory")
         
     timestamp = datetime.now().strftime('%Y%m%d_%H%M')
     problem = Problem(parser)

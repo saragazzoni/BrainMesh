@@ -17,22 +17,20 @@ class Problem(object):
             config = json.load(f)
         parameters = config["parameters"]
 
-        output_dir = args.output_dir
-
-
         save_sol = parameters["Save_solution_xdmf"]["value"]
-
+        output_dir = config["Output_dir"]["value"]
         self.save_mesh_xdmf = parameters["Save_mesh_xdmf"]["value"]
         self.filename = parameters["mesh_filename"]["value"]
         self.h_ub = parameters["h_ub"]["value"]
         self.h_lb = parameters["h_lb"]["value"]
         self.sigma = parameters["sigma"]["value"]
+        self.tumor_tag = parameters["tumor_tag"]["value"]
         self.io_manager = IOManager(output_dir, plot=save_sol)
         self.set_space(self.filename)
 
     def set_space(self, mesh_filename, timestep=0, iteration=0):
-        
-        self.mesh = self.io_manager.import_mesh(mesh_filename, timestep, iteration)
+
+        self.mesh = self.io_manager.import_mesh(mesh_filename, self.tumor_tag, timestep, iteration)
         elem = element("Lagrange", self.mesh.basix_cell(), 1)
         V_phi = dolfinx.fem.functionspace(self.mesh, elem)
         V_mu = dolfinx.fem.functionspace(self.mesh, elem)
@@ -49,7 +47,7 @@ class Problem(object):
         filename = self.filename
 
         mesh_adapter = MeshAdapter(self.mesh, self._function_space_phi) 
-        mesh_adapter.compute_size(h_ub=self.h_ub, h_lb=self.h_lb, sigma=self.sigma)
+        mesh_adapter.compute_size(tumor_center=self.io_manager.center, h_ub=self.h_ub, h_lb=self.h_lb, sigma=self.sigma)
         mesh_adapter.compute_metric(file_name=filename, output_manager=self.io_manager)
         self.io_manager.write_tet_mesh(filename)
         mesh_adapter.create_mesh()

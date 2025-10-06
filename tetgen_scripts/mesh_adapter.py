@@ -13,7 +13,7 @@ class MeshAdapter(object):
         self.num_nodes = len(self.msh.geometry.x)
 
         
-    def compute_size(self, h_ub=0.1, h_lb=1e-2, sigma=5.0):
+    def compute_size(self, tumor_center, h_ub=0.1, h_lb=1e-2, sigma=5.0):
 
         comm = self.msh.comm
         rank = comm.rank
@@ -33,8 +33,7 @@ class MeshAdapter(object):
             center_y = (p0[1]+p1[1]+p2[1]+p3[1])/4
             center_z = (p0[2]+p1[2]+p2[2]+p3[2])/4
             point = np.array([center_x, center_y, center_z])
-            center = np.array([-1.5, 6.1, 0.4])
-            distances = np.linalg.norm(point - center)
+            distances = np.linalg.norm(point - tumor_center)
             h_new = h_lb + (h_ub - h_lb) * (1-np.exp(-(distances**2)/sigma**2))
             if h_new > h_ub:
                 self.h_new_vect[ii] = h_ub

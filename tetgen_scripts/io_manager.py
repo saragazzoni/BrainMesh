@@ -31,13 +31,27 @@ class IOManager(object):
         if self.plot:
             self.file.close()
 
-    def import_mesh(self, filename, t, iteration):
+    def import_mesh(self, filename, tag, t, iteration):
         
         with dolfinx.io.XDMFFile(MPI.COMM_WORLD, f"{self.sol_folder}/{filename}.xdmf", "r") as xdmf:
             self.msh=xdmf.read_mesh(name="Grid")
             self.tags=xdmf.read_meshtags(self.msh,"Grid")
         self.time_step = t
         self.iteration = iteration
+
+        self.msh.topology.create_connectivity(self.msh.topology.dim, 0)
+        c_to_v = self.msh.topology.connectivity(self.msh.topology.dim, 0)
+
+        tumor_cells = np.where(self.tags.values == tag)[0]
+        # baricentri di tutte le celle con quel tag
+        tumor_centers = np.array([
+            self.msh.geometry.x[c_to_v.links(cell)].mean(axis=0)
+            for cell in tumor_cells
+        ])
+
+        # centro medio (baricentro del tumore)
+        self.center = tumor_centers.mean(axis=0)
+        print(f"Tumor center at {self.center}")
 
         return self.msh
     
