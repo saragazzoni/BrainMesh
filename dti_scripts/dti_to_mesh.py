@@ -1,6 +1,6 @@
 import vtk
 import meshio 
-import numpy as np
+import argparse
 
 # Function to read the refined mesh file (VTK/VTU format)
 def read_mesh(filename):
@@ -63,10 +63,10 @@ def write_mesh(mesh, output_filename):
     writer.SetInputData(mesh)
     writer.Write()
 
-def vtu_to_xdfm(meshfile, xdmf_file, comp, coef=1e6):
+def vtu_to_xdfm(meshfile, comp, coef=1e6, L_car=1.0):
 
     mesh = meshio.read(meshfile)
-    points = mesh.points/10.0
+    points = mesh.points/L_car
     # points = mesh.points
     tetra  = {"tetra": mesh.cells_dict["tetra"]}
     
@@ -75,6 +75,7 @@ def vtu_to_xdfm(meshfile, xdmf_file, comp, coef=1e6):
 
     # Write the dti data to a .xdmf file 
     xdmf = meshio.Mesh(points, tetra, cell_data=dti)
+    xdmf_file = meshfile.replace(".vtu", ".xdmf")
     meshio.write(xdmf_file, xdmf)
     print(f"Mesh {comp} written successfully")
 
@@ -93,20 +94,30 @@ def main(refined_mesh_file, scalar_field_file, output_file,label):
     # Write the modified mesh to a new file
     write_mesh(mesh, output_file)
 
-    vtu_to_xdfm(output_file, xdmf_file, label, coef=1e6)
+    vtu_to_xdfm(output_file, label, coef=1e6)
 
     print(f"Mesh with {label} field written to {output_file}")
 
-if __name__ == "__main__":
-    # Example usage
-    data_folder = "Data/paz1/2018-02-06"
-    # data_folder = "Data/paz22/27-03"
-    components = ["Dxx", "Dyy", "Dzz", "Dxy", "Dxz", "Dyz"]
-    for component in components:
-        mesh_file = f"{data_folder}/mesh/mesh_nobrain_final000000.vtu"  # Path to your refined mesh file
-        dti_file = f"{data_folder}/dti/{component}.mhd"  # Path to the scalar field (e.g., Dxx.mhd)
-        output_file = f"{data_folder}/dti/Mesh_{component}.vtu"  # Output file path
-        xdmf_file = f"{data_folder}/dti/Mesh_{component}_nobrain_adim.xdmf"
-        label = component
 
-        main(mesh_file, dti_file, output_file,label)
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser(description="Process mesh and DTI scalar components")
+    
+    parser.add_argument("--dti_folder", type=str, required=True,
+                        help="Folder where the DTI .mhd files are located")
+    parser.add_argument("--mesh_path", type=str, required=True,
+                        help="Path to the refined mesh file (vtu)")
+    parser.add_argument("--output_folder", type=str, required=True,
+                        help="Folder where the output .vtu files will be located")
+
+
+    args = parser.parse_args()
+
+    mesh_file = args.mesh_path
+    components = ["Dxx", "Dyy", "Dzz", "Dxy", "Dxz", "Dyz"]
+    for comp in components:
+        dti_file = f"{args.dti_folder}/{comp}.mhd"
+        output_file = f"{args.output_folder}/{comp}.vtu"
+
+        main(mesh_file, dti_file, output_file, comp)
+
+    

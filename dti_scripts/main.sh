@@ -1,9 +1,9 @@
 #!/bin/bash
 
 CASE_FOLDER=$1
-SCRIPT_PATH=${CASE_FOLDER}/../anima_scripts
-ANIMA_BIN_PATH=.././../../../../../../../home/saragazzoni/Software/Anima/build/bin
-ANIMA_SCRIPT_PATH=../../../../../../../../../home/saragazzoni/Software/Anima/Anima-Scripts-Public
+SCRIPT_PATH=$2
+ANIMA_BIN_PATH=$3
+ANIMA_SCRIPT_PATH=$4
 
 echo "**********************************************************"
 echo "***             Diffusion Preprocessing                ***"
@@ -16,22 +16,22 @@ echo ""
 DATES=`find ${CASE_FOLDER}/images -type f -name '*DTI_20_dir*' | sed -r 's|/[^/]+$||' | sort | uniq`
 # echo $DATES
 
-#  for date in ${DATES}; do
-#  	IMAGE_PATH=${date}
-#  	echo "-------------------------------------"
-#  	echo "- Dealing with $IMAGE_PATH -"
-#  	echo "-------------------------------------"
-#  	sh ${SCRIPT_PATH}/run_diffusion.sh \
-#  		${IMAGE_PATH} \
-#  		DTI_20_dir_B700 \
-#  		DTI_40_dir_B1500 \
-#  		DTI_64_dir_B3000 \
-#  		DTI_6_dir_B700_PA.nii.gz \
-#  		*T1*_marked.nii.gz \
-#  		${SCRIPT_PATH} \
-#  		${ANIMA_BIN_PATH} \
-#  		${ANIMA_SCRIPT_PATH}
-#  done
+ for date in ${DATES}; do
+ 	IMAGE_PATH=${date}
+ 	echo "-------------------------------------"
+ 	echo "- Dealing with $IMAGE_PATH -"
+ 	echo "-------------------------------------"
+ 	sh ${SCRIPT_PATH}/run_diffusion.sh \
+ 		${IMAGE_PATH} \
+ 		DTI_20_dir_B700 \
+ 		DTI_40_dir_B1500 \
+ 		DTI_64_dir_B3000 \
+ 		DTI_6_dir_B700_PA.nii.gz \
+ 		*T1*_marked.nii.gz \
+ 		${SCRIPT_PATH} \
+ 		${ANIMA_BIN_PATH} \
+ 		${ANIMA_SCRIPT_PATH}
+ done
 
 echo "***********************************************************************************"
 echo "***                                Registration Step                            ***"
