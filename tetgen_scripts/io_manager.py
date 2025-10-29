@@ -42,15 +42,16 @@ class IOManager(object):
         self.msh.topology.create_connectivity(self.msh.topology.dim, 0)
         c_to_v = self.msh.topology.connectivity(self.msh.topology.dim, 0)
 
-        tumor_cells = np.where(self.tags.values == tag)[0]
-        # baricentri di tutte le celle con quel tag
-        tumor_centers = np.array([
-            self.msh.geometry.x[c_to_v.links(cell)].mean(axis=0)
-            for cell in tumor_cells
-        ])
+        # tumor_cells = np.where(self.tags.values == tag)[0]
+        # # baricentri di tutte le celle con quel tag
+        # tumor_centers = np.array([
+        #     self.msh.geometry.x[c_to_v.links(cell)].mean(axis=0)
+        #     for cell in tumor_cells
+        # ])
 
         # centro medio (baricentro del tumore)
-        self.center = tumor_centers.mean(axis=0)
+        # self.center = tumor_centers.mean(axis=0)
+        self.center = np.array([-14.5794,  73.2963,  32.1502])
         print(f"Tumor center at {self.center}")
 
         return self.msh

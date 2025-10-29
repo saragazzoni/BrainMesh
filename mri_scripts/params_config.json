@@ -1,10 +1,9 @@
 {   
-    "patient_path": "../../Data/Campanini_Maria_paz23",
-    "mesh_folder_path": "Data/paz23",
+    "patient_path": "/mnt/c/Users/ASUS/Desktop/PhD/Data/Campanini_Maria/26-02",
 
     "volume_mesh": {    
         "remesh_iterations_brain": 3,
-        "remesh_length_brain": 1.0,
+        "remesh_length_brain": 10.0,
         "smoothen_iterations_brain": 5,
         "smoothen_epsilon_brain": 0.7,
         "remesh_iterations_tumor": 3,

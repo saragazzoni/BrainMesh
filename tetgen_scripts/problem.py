@@ -18,7 +18,7 @@ class Problem(object):
         parameters = config["parameters"]
 
         save_sol = parameters["Save_solution_xdmf"]["value"]
-        output_dir = config["Output_dir"]["value"]
+        output_dir = parameters["Output_dir"]["value"]
         self.save_mesh_xdmf = parameters["Save_mesh_xdmf"]["value"]
         self.filename = parameters["mesh_filename"]["value"]
         self.h_ub = parameters["h_ub"]["value"]

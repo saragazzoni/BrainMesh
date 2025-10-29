@@ -50,7 +50,7 @@ def adapt_mesh(filename):
     rank = comm.rank
 
     if rank == 0:
-        output = subprocess.run(["tetgen1.6.0/build/tetgen", "-rqm", filename], stdout=subprocess.PIPE, stderr=subprocess.DEVNULL, text=True)
+        output = subprocess.run(["tetgen", "-rqm", filename], stdout=subprocess.PIPE, stderr=subprocess.DEVNULL, text=True)
         #subprocess.run(["rm", f"{filename}.mtr"])
         #subprocess.run(["rm", f"{filename}.edge"])
         #subprocess.run(["rm", f"{filename}.face"])

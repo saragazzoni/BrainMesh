@@ -67,3 +67,14 @@ def from_mesh_to_adim_xdmf(meshfile, xdmf_file, L_car=1):
     xdmf_mesh = meshio.Mesh(points, tetra, cell_data=subdomains)
     meshio.write(xdmf_file, xdmf_mesh)
     print(f"Mesh salvata in {xdmf_file}")
+
+def mesh_from_single_surface(stl_input, output_mesh):
+    # Load input STL file
+    surface = svmtk.Surface(stl_input)
+    
+    # Create volume mesh from single surface
+    domain = svmtk.Domain(surface)
+    domain.create_mesh(16)
+    domain.save(output_mesh)
+
+    return domain
