@@ -10,7 +10,7 @@
 # MODIFY ONLY THIS SECTION
 
 # Path to patient directory (DICOM)
-PATH_TO_PATIENT="/mnt/c/Users/ASUS/Desktop/PhD/Data/Campanini_Maria/Campanini_Maria"
+PATH_TO_PATIENT="/Users/saragazzoni/Desktop/Data/Campanini_Maria_paz23/Campanini_Maria"
 BASENAME="T1_3D_AX"  # Base name of the reference MRI file (without extension)
 EXAM_FOLDER="Rm_26-2-18"  # Name of the exam folder to process
 EXAM_DATE="2018-02-26"  # Date of the exam to process (format: YYYY-MM-DD)
@@ -19,12 +19,12 @@ EXAM_DATE="2018-02-26"  # Date of the exam to process (format: YYYY-MM-DD)
 SEPARATION_TAG="-"
 
 # Paths to Anima scripts and tools needed for main.sh
-SCRIPT_PATH="/mnt/c/Users/ASUS/Desktop/PhD/Code/BrainMesh/dti_scripts"
-ANIMA_BIN_PATH="/home/saragazzoni/Software/Anima/build/bin"
-ANIMA_SCRIPT_PATH="/home/saragazzoni/Software/Anima/Anima-Scripts-Public"
+SCRIPT_PATH="/Users/saragazzoni/Desktop/Code/BrainMesh/dti_scripts"
+ANIMA_BIN_PATH="/Users/saragazzoni/Documents/Anima-Binaries-4.2"
+ANIMA_SCRIPT_PATH="/Users/saragazzoni/Documents/Anima-Scripts-Public"
 
-# Path to the folder containing the mesh 
-PATH_TO_MESH_FOLDER="/mnt/c/Users/ASUS/Desktop/PhD/Data/Campanini_Maria/26-02"
+# Path to the folder containing the mesh
+PATH_TO_MESH_FOLDER="/Users/saragazzoni/Desktop/Data/Campanini_Maria_paz23/Campanini_Maria/26-02"
 
 # ======== 2. FUNZIONI UTILI ========
 # log() {
@@ -67,7 +67,7 @@ PATH_TO_MESH_FOLDER="/mnt/c/Users/ASUS/Desktop/PhD/Data/Campanini_Maria/26-02"
 # log "File copiato e rinominato: $MARKED_FILE"
 
 
-# # ======== 5. STEP 2 - Esecuzione main.sh ========
+# ======== 5. STEP 2 - Esecuzione main.sh ========
 # log "Eseguo main.sh con variabili di ambiente personalizzate..."
 
 # # Esporta le variabili che main.sh si aspetta
@@ -82,8 +82,8 @@ PATH_TO_MESH_FOLDER="/mnt/c/Users/ASUS/Desktop/PhD/Data/Campanini_Maria/26-02"
 # fi
 
 # # ======== STEP 3 - Diffusion Tensor Estimation ========
-# cd "${PATH_TO_PATIENT}/images/${EXAM_DATE}/processed" || exit 1
-# log "Eseguo stima del tensore di diffusione..."
+cd "${PATH_TO_PATIENT}/images/${EXAM_DATE}/processed" || exit 1
+# echo "Eseguo stima del tensore di diffusione..."
 
 # python $SCRIPT_PATH/animaTensorModelEstimation.py \
 #     -i DWI_preprocessed.nrrd \
@@ -91,15 +91,15 @@ PATH_TO_MESH_FOLDER="/mnt/c/Users/ASUS/Desktop/PhD/Data/Campanini_Maria/26-02"
 #     -b DWI.bval \
 #     -p 4
 
-# python $SCRIPT_PATH/animaProjectDiffusionToT1.py \
-#     -t ${BASENAME}_masked.nrrd \
-#     -m DWI_Tensors.nrrd \
-#     -v DWI_Variance.nrrd \
-#     -b DWI_B0.nrrd
+python $SCRIPT_PATH/animaProjectDiffusionToT1.py \
+    -t ${BASENAME}_marked_masked.nrrd \
+    -m DWI_Tensors.nrrd \
+    -v DWI_Variance.nrrd \
+    -b DWI_B0.nrrd
 
 # ======== STEP 4  - Extract 6 components from the diffusion tensor ========
 cd "${PATH_TO_PATIENT}/images/${EXAM_DATE}/processed" || exit 1
-${ANIMA_BIN_PATH}/animaCollapseImage -i DWI_Tensors.nrrd -o tmp.nrrd
+${ANIMA_BIN_PATH}/animaCollapseImage -i DWI_Tensors_final.nrrd -o tmp.nrrd
 ${ANIMA_BIN_PATH}/animaCropImage -i tmp.nrrd -t 0 -T 0 -o Dxx.nii.gz
 ${ANIMA_BIN_PATH}/animaCropImage -i tmp.nrrd -t 1 -T 0 -o Dxy.nii.gz
 ${ANIMA_BIN_PATH}/animaCropImage -i tmp.nrrd -t 2 -T 0 -o Dyy.nii.gz
@@ -107,20 +107,20 @@ ${ANIMA_BIN_PATH}/animaCropImage -i tmp.nrrd -t 3 -T 0 -o Dxz.nii.gz
 ${ANIMA_BIN_PATH}/animaCropImage -i tmp.nrrd -t 4 -T 0 -o Dyz.nii.gz
 ${ANIMA_BIN_PATH}/animaCropImage -i tmp.nrrd -t 5 -T 0 -o Dzz.nii.gz
 
-# >>> conda initialize >>>
-# !! Contents within this block are managed by 'conda init' !!
-# __conda_setup="$('/home/saragazzoni/miniconda3/bin/conda' 'shell.bash' 'hook' 2> /dev/null)"
-# if [ $? -eq 0 ]; then
-#     eval "$__conda_setup"
-# else
-#     if [ -f "/home/saragazzoni/miniconda3/etc/profile.d/conda.sh" ]; then
-#         . "/home/saragazzoni/miniconda3/etc/profile.d/conda.sh"
-#     else
-#         export PATH="/home/saragazzoni/miniconda3/bin:$PATH"
-#     fi
-# fi
-# unset __conda_setup
-# # <<< conda initialize <<<
+>>> conda initialize >>>
+!! Contents within this block are managed by 'conda init' !!
+__conda_setup="$('/home/saragazzoni/miniconda3/bin/conda' 'shell.bash' 'hook' 2> /dev/null)"
+if [ $? -eq 0 ]; then
+    eval "$__conda_setup"
+else
+    if [ -f "/home/saragazzoni/miniconda3/etc/profile.d/conda.sh" ]; then
+        . "/home/saragazzoni/miniconda3/etc/profile.d/conda.sh"
+    else
+        export PATH="/home/saragazzoni/miniconda3/bin:$PATH"
+    fi
+fi
+unset __conda_setup
+<<< conda initialize <<<
 
 # conda activate vmtk-env
 # vmtk vmtkimagewriter -ifile Dxx.nii.gz -ofile Dxx.mhd

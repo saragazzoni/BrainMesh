@@ -11,6 +11,7 @@ def read_mesh(filename):
 
 # Function to read the DTI tensor component from a .mhd file
 def read_mhd_scalar_field(mhd_filename):
+    print(f"Reading scalar field from {mhd_filename}")
     reader = vtk.vtkMetaImageReader()
     reader.SetFileName(mhd_filename)
     reader.Update()
@@ -58,10 +59,12 @@ def assign_scalar_to_mesh(mesh, scalar_field,label):
 
 # Function to write the modified mesh to a new file
 def write_mesh(mesh, output_filename):
+    print(f"Writing mesh to {output_filename}")
     writer = vtk.vtkXMLUnstructuredGridWriter()
     writer.SetFileName(output_filename)
     writer.SetInputData(mesh)
     writer.Write()
+    print(f"Mesh written to {output_filename}")
 
 def vtu_to_xdfm(meshfile, comp, coef=1e6, L_car=1.0):
 
@@ -90,7 +93,7 @@ def main(refined_mesh_file, scalar_field_file, output_file,label):
     
     # Assign the scalar field to the mesh cells
     assign_scalar_to_mesh(mesh, scalar_field,label)
-    
+
     # Write the modified mesh to a new file
     write_mesh(mesh, output_file)
 
@@ -113,10 +116,10 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     mesh_file = args.mesh_path
-    components = ["Dxx", "Dyy", "Dzz", "Dxy", "Dxz", "Dyz"]
+    components = ["Dxx"]
     for comp in components:
-        dti_file = f"{args.dti_folder}/{comp}.mhd"
-        output_file = f"{args.output_folder}/{comp}.vtu"
+        dti_file = f"{args.dti_folder}/{comp}_flipped.mhd"
+        output_file = f"{args.output_folder}/{comp}_MNI.vtu"
 
         main(mesh_file, dti_file, output_file, comp)
 

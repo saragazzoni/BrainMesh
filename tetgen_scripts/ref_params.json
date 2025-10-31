@@ -21,11 +21,11 @@
       "description": "Set to True to save each time iteration of the solution as xdmf file (default: true)"
     },
     "Output_dir": {
-      "value": "../../Data/ref/mesh",
+      "value": "../../Data/Campanini_Maria_paz23/26-02/mesh",
       "description": "Set the directory to save and read the mesh ans solution files"
     },
     "mesh_filename": {
-      "value": "brainRef",
+      "value": "brain_tumor",
       "description": "Set the filename baseline to read the mesh files"
     },
     "tumor_tag": {
