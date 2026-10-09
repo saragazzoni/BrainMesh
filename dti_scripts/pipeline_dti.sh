@@ -10,10 +10,10 @@
 # MODIFY ONLY THIS SECTION
 
 # Path to patient directory (DICOM)
-PATH_TO_PATIENT="/Users/saragazzoni/Desktop/Data/Campanini_Maria_paz23/Campanini_Maria"
-BASENAME="T1_3D_AX"  # Base name of the reference MRI file (without extension)
-EXAM_FOLDER="Rm_26-2-18"  # Name of the exam folder to process
-EXAM_DATE="2018-02-26"  # Date of the exam to process (format: YYYY-MM-DD)
+PATH_TO_PATIENT="/Users/saragazzoni/Desktop/Data/Ba_Di"
+BASENAME="T1_3D_AX_mdc"  # Base name of the reference MRI file (without extension)
+EXAM_FOLDER="Rm_28-06-18"  # Name of the exam folder to process
+EXAM_DATE="2018-06-28"  # Date of the exam to process (format: YYYY-MM-DD)
 
 # Separation tag for exams dates (e.g., "-" in "2023-01-15")
 SEPARATION_TAG="-"
@@ -24,72 +24,72 @@ ANIMA_BIN_PATH="/Users/saragazzoni/Documents/Anima-Binaries-4.2"
 ANIMA_SCRIPT_PATH="/Users/saragazzoni/Documents/Anima-Scripts-Public"
 
 # Path to the folder containing the mesh
-PATH_TO_MESH_FOLDER="/Users/saragazzoni/Desktop/Data/Campanini_Maria_paz23/Campanini_Maria/26-02"
+PATH_TO_MESH_FOLDER="${PATH_TO_PATIENT}/preop"
 
 # ======== 2. FUNZIONI UTILI ========
-# log() {
-#     echo -e "\n[INFO] $(date '+%H:%M:%S') - $1"
-# }
+log() {
+    echo -e "\n[INFO] $(date '+%H:%M:%S') - $1"
+}
 
-# check_dir() {
-#     if [ ! -d "$1" ]; then
-#         echo "[ERRORE] Directory non trovata: $1"
-#         exit 1
-#     fi
-# }
+check_dir() {
+    if [ ! -d "$1" ]; then
+        echo "[ERRORE] Directory non trovata: $1"
+        exit 1
+    fi
+}
 
-# check_file() {
-#     if [ ! -f "$1" ]; then
-#         echo "[ERRORE] File non trovato: $1"
-#         exit 1
-#     fi
-# }
+check_file() {
+    if [ ! -f "$1" ]; then
+        echo "[ERRORE] File non trovato: $1"
+        exit 1
+    fi
+}
 
 # # ======== 3. CONTROLLO INPUT ========
-# check_dir "$PATH_TO_PATIENT"
+check_dir "$PATH_TO_PATIENT"
 
-# # ======== 4. STEP 1 - DICOM → NIfTI ========
-# log "Converto DICOM in NIfTI per il paziente in ${PATH_TO_PATIENT}"
-# ./dicomToNifti.sh "$PATH_TO_PATIENT" "$EXAM_FOLDER" "$SEPARATION_TAG"
-# if [ $? -ne 0 ]; then
-#     echo "[ERRORE] dicomToNifti.sh non completato correttamente."
-#     exit 1
-# fi
+# ======== 4. STEP 1 - DICOM → NIfTI ========
+log "Converto DICOM in NIfTI per il paziente in ${PATH_TO_PATIENT}"
+./dicomToNifti.sh "$PATH_TO_PATIENT" "$EXAM_FOLDER" "$SEPARATION_TAG"
+if [ $? -ne 0 ]; then
+    echo "[ERRORE] dicomToNifti.sh non completato correttamente."
+    exit 1
+fi
 
-# # File originale
-# GENERATED_FILE="${PATH_TO_PATIENT}/images/${EXAM_DATE}/${BASENAME}.nii.gz"
-# check_file "$GENERATED_FILE"
+# File originale
+GENERATED_FILE="${PATH_TO_PATIENT}/images/${EXAM_DATE}/${BASENAME}.nii.gz"
+check_file "$GENERATED_FILE"
 
-# # File marcato
-# MARKED_FILE="${PATH_TO_PATIENT}/images/${EXAM_DATE}/${BASENAME}_marked.nii.gz"
-# cp "$GENERATED_FILE" "$MARKED_FILE"
+# File marcato
+MARKED_FILE="${PATH_TO_PATIENT}/images/${EXAM_DATE}/${BASENAME}_marked.nii.gz"
+cp "$GENERATED_FILE" "$MARKED_FILE"
 
-# log "File copiato e rinominato: $MARKED_FILE"
+log "File copiato e rinominato: $MARKED_FILE"
 
 
 # ======== 5. STEP 2 - Esecuzione main.sh ========
-# log "Eseguo main.sh con variabili di ambiente personalizzate..."
+log "Eseguo main.sh con variabili di ambiente personalizzate..."
 
-# # Esporta le variabili che main.sh si aspetta
-# export SCRIPT_PATH
-# export ANIMA_BIN_PATH
-# export ANIMA_SCRIPT_PATH
+# Esporta le variabili che main.sh si aspetta
+export SCRIPT_PATH
+export ANIMA_BIN_PATH
+export ANIMA_SCRIPT_PATH
 
-# ./main.sh "$PATH_TO_PATIENT" "$SCRIPT_PATH" "$ANIMA_BIN_PATH" "$ANIMA_SCRIPT_PATH"
-# if [ $? -ne 0 ]; then
-#     echo "[ERRORE] main.sh non completato correttamente."
-#     exit 1
-# fi
+./main.sh "$PATH_TO_PATIENT" "$SCRIPT_PATH" "$ANIMA_BIN_PATH" "$ANIMA_SCRIPT_PATH"
+if [ $? -ne 0 ]; then
+    echo "[ERRORE] main.sh non completato correttamente."
+    exit 1
+fi
 
 # # ======== STEP 3 - Diffusion Tensor Estimation ========
 cd "${PATH_TO_PATIENT}/images/${EXAM_DATE}/processed" || exit 1
-# echo "Eseguo stima del tensore di diffusione..."
+echo "Eseguo stima del tensore di diffusione..."
 
-# python $SCRIPT_PATH/animaTensorModelEstimation.py \
-#     -i DWI_preprocessed.nrrd \
-#     -g DWI_preprocessed.bvec \
-#     -b DWI.bval \
-#     -p 4
+python $SCRIPT_PATH/animaTensorModelEstimation.py \
+    -i DWI_preprocessed.nrrd \
+    -g DWI_preprocessed.bvec \
+    -b DWI.bval \
+    -p 4
 
 python $SCRIPT_PATH/animaProjectDiffusionToT1.py \
     -t ${BASENAME}_marked_masked.nrrd \
@@ -107,30 +107,33 @@ ${ANIMA_BIN_PATH}/animaCropImage -i tmp.nrrd -t 3 -T 0 -o Dxz.nii.gz
 ${ANIMA_BIN_PATH}/animaCropImage -i tmp.nrrd -t 4 -T 0 -o Dyz.nii.gz
 ${ANIMA_BIN_PATH}/animaCropImage -i tmp.nrrd -t 5 -T 0 -o Dzz.nii.gz
 
->>> conda initialize >>>
-!! Contents within this block are managed by 'conda init' !!
-__conda_setup="$('/home/saragazzoni/miniconda3/bin/conda' 'shell.bash' 'hook' 2> /dev/null)"
+# >>> conda initialize >>>
+# !! Contents within this block are managed by 'conda init' !!
+__conda_setup="$('/Users/saragazzoni/anaconda3/bin/conda' 'shell.zsh' 'hook' 2> /dev/null)"
 if [ $? -eq 0 ]; then
     eval "$__conda_setup"
 else
-    if [ -f "/home/saragazzoni/miniconda3/etc/profile.d/conda.sh" ]; then
-        . "/home/saragazzoni/miniconda3/etc/profile.d/conda.sh"
+    if [ -f "/Users/saragazzoni/anaconda3/etc/profile.d/conda.sh" ]; then
+        . "/Users/saragazzoni/anaconda3/etc/profile.d/conda.sh"
     else
-        export PATH="/home/saragazzoni/miniconda3/bin:$PATH"
+        export PATH="/Users/saragazzoni/anaconda3/bin:$PATH"
     fi
 fi
 unset __conda_setup
-<<< conda initialize <<<
+# <<< conda initialize <<<
 
-# conda activate vmtk-env
-# vmtk vmtkimagewriter -ifile Dxx.nii.gz -ofile Dxx.mhd
-# vmtk vmtkimagewriter -ifile Dxy.nii.gz -ofile Dxy.mhd
-# vmtk vmtkimagewriter -ifile Dyy.nii.gz -ofile Dyy.mhd
-# vmtk vmtkimagewriter -ifile Dxz.nii.gz -ofile Dxz.mhd
-# vmtk vmtkimagewriter -ifile Dyz.nii.gz -ofile Dyz.mhd
-# vmtk vmtkimagewriter -ifile Dzz.nii.gz -ofile Dzz.mhd
-# rm -fr tmp*.nrrd Dxx.nii.gz Dxy.nii.gz Dyy.nii.gz Dxz.nii.gz Dyz.nii.gz Dzz.nii.gz
-# conda activate fenicsx-env
+mkdir ${PATH_TO_MESH_FOLDER}/dti
+
+conda activate vmtk_env
+vmtk vmtkimagewriter -ifile Dxx.nii.gz -ofile ${PATH_TO_MESH_FOLDER}/dti/Dxx.mhd
+vmtk vmtkimagewriter -ifile Dxy.nii.gz -ofile ${PATH_TO_MESH_FOLDER}/dti/Dxy.mhd
+vmtk vmtkimagewriter -ifile Dyy.nii.gz -ofile ${PATH_TO_MESH_FOLDER}/dti/Dyy.mhd
+vmtk vmtkimagewriter -ifile Dxz.nii.gz -ofile ${PATH_TO_MESH_FOLDER}/dti/Dxz.mhd
+vmtk vmtkimagewriter -ifile Dyz.nii.gz -ofile ${PATH_TO_MESH_FOLDER}/dti/Dyz.mhd
+vmtk vmtkimagewriter -ifile Dzz.nii.gz -ofile ${PATH_TO_MESH_FOLDER}/dti/Dzz.mhd
+rm -fr tmp*.nrrd Dxx.nii.gz Dxy.nii.gz Dyy.nii.gz Dxz.nii.gz Dyz.nii.gz Dzz.nii.gz
+
+#conda activate fenicsx-env
 
 # # ======== STEP 5  - Projection on the mesh ========
 # python $SCRIPT_PATH/dti_to_mesh.py \

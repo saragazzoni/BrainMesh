@@ -14,16 +14,20 @@ def remesh_surface(stl_input, output, L, n,
     # Save remeshed STL surface 
     surface.save(output)  
 
+import time 
 def smoothen_surface(stl_input, output,
                      n=1, eps=1.0, preserve_volume=True):
     # Load input STL file
+    t = time.time()
     surface = svmtk.Surface(stl_input)
+    print("caricata:", time.time() - t, "s |", surface.num_vertices(), "vertici")
 
     # Smooth using Taubin smoothing
     # if volume should be preserved,
     # otherwise use Laplacian smoothing
     if preserve_volume:
         surface.smooth_taubin(n)
+        
     else:
         surface.smooth_laplacian(eps, n)
         
@@ -78,3 +82,51 @@ def mesh_from_single_surface(stl_input, output_mesh):
     domain.save(output_mesh)
 
     return domain
+
+def create_full_brain_mesh(brain_stl, tumor_stl, wm_stl, gm_stl, output, resolution=16):
+    # Load the surfaces into SVM-Tk and combine in list
+    brain  = svmtk.Surface(brain_stl)
+    tumor = svmtk.Surface(tumor_stl)
+    wm = svmtk.Surface(wm_stl)
+    gm = svmtk.Surface(gm_stl)
+    surfaces = [brain, gm, wm, tumor]
+    # Create a map for the subdomains with tags
+
+    smap = svmtk.SubdomainMap()
+    smap.add("1000", 1)
+    smap.add("1100", 2)
+    smap.add("1110", 3)
+    smap.add("1010", 3)
+    smap.add("1111", 4)
+    smap.add("1101", 4)
+    smap.add("1001", 4)
+    # Create a tagged domain from the list of surfaces
+    # and the map
+    domain = svmtk.Domain(surfaces, smap)
+       
+    # Create and save the volume mesh 
+    domain.create_mesh(resolution)
+    domain.save(output)
+
+def create_pial_mesh(tumor_stl, wm_stl, gm_stl, output, resolution=16):
+    # Load the surfaces into SVM-Tk and combine in list
+    tumor = svmtk.Surface(tumor_stl)
+    wm = svmtk.Surface(wm_stl)
+    gm = svmtk.Surface(gm_stl)
+    surfaces = [gm, wm, tumor]
+    # Create a map for the subdomains with tags
+
+    smap = svmtk.SubdomainMap()
+    smap.add("100", 2)
+    smap.add("110", 3)
+    smap.add("010", 3)
+    smap.add("111", 4)
+    smap.add("101", 4)
+    smap.add("001", 4)
+    # Create a tagged domain from the list of surfaces
+    # and the map
+    domain = svmtk.Domain(surfaces, smap)
+       
+    # Create and save the volume mesh 
+    domain.create_mesh(resolution)
+    domain.save(output)

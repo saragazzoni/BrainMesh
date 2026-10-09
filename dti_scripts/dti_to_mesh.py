@@ -1,6 +1,7 @@
 import vtk
 import meshio 
 import argparse
+import numpy as np
 
 # Function to read the refined mesh file (VTK/VTU format)
 def read_mesh(filename):
@@ -15,7 +16,22 @@ def read_mhd_scalar_field(mhd_filename):
     reader = vtk.vtkMetaImageReader()
     reader.SetFileName(mhd_filename)
     reader.Update()
-    return reader.GetOutput()
+
+    output = reader.GetOutput()
+    return output
+
+def scale_mesh(mesh, scale_factor):
+    """Scala tutti i punti della mesh"""
+    transform = vtk.vtkTransform()
+    transform.Scale(scale_factor, scale_factor, scale_factor)
+    
+    transform_filter = vtk.vtkTransformFilter()
+    transform_filter.SetInputData(mesh)
+    transform_filter.SetTransform(transform)
+    transform_filter.Update()
+    
+    return transform_filter.GetOutput()
+
 
 # Function to assign the scalar field to the mesh cells
 def assign_scalar_to_mesh(mesh, scalar_field,label):
@@ -57,6 +73,46 @@ def assign_scalar_to_mesh(mesh, scalar_field,label):
     # Add the new scalar field to the mesh's cell data
     mesh.GetCellData().AddArray(cell_scalar_array)
 
+def assign_scalar_to_mesh_log(mesh, scalar_field, label, use_log=True):
+    num_cells = mesh.GetNumberOfCells()
+
+    probe = vtk.vtkProbeFilter()
+    probe.SetInputData(mesh)
+    probe.SetSourceData(scalar_field)
+    probe.Update()
+
+    probed_mesh = probe.GetOutput()
+    scalar_values = probed_mesh.GetPointData().GetScalars()
+
+    cell_scalar_array = vtk.vtkDoubleArray()
+    cell_scalar_array.SetName(label)
+    cell_scalar_array.SetNumberOfComponents(1)
+    cell_scalar_array.SetNumberOfTuples(num_cells)
+
+    for i in range(num_cells):
+        cell = mesh.GetCell(i)
+        cell_points = cell.GetPoints()
+        num_points = cell_points.GetNumberOfPoints()
+
+        avg_value = 0.0
+        for j in range(num_points):
+            point_id = cell.GetPointId(j)
+            value = scalar_values.GetValue(point_id)
+            
+            if use_log and value > 0:
+                value = np.log(value)
+            
+            avg_value += value
+
+        avg_value /= num_points
+        
+        if use_log:
+            avg_value = np.exp(avg_value)
+        
+        cell_scalar_array.SetValue(i, avg_value)
+
+    mesh.GetCellData().AddArray(cell_scalar_array)
+
 # Function to write the modified mesh to a new file
 def write_mesh(mesh, output_filename):
     print(f"Writing mesh to {output_filename}")
@@ -66,7 +122,7 @@ def write_mesh(mesh, output_filename):
     writer.Write()
     print(f"Mesh written to {output_filename}")
 
-def vtu_to_xdfm(meshfile, comp, coef=1e6, L_car=1.0):
+def vtu_to_xdfm(meshfile, comp, coef=1e6, L_car=10.0):
 
     mesh = meshio.read(meshfile)
     points = mesh.points/L_car
@@ -84,18 +140,21 @@ def vtu_to_xdfm(meshfile, comp, coef=1e6, L_car=1.0):
 
 
 # Main workflow
-def main(refined_mesh_file, scalar_field_file, output_file,label):
+def project_dti(refined_mesh_file, scalar_field_file, output_file,label):
     # Read the refined mesh
     mesh = read_mesh(refined_mesh_file)
+    
+    # Scala su di un fattore 10
+    mesh_scaled = scale_mesh(mesh, 10.0)
     
     # Read the scalar field (e.g., Dxx.mhd) corresponding to a tensor component
     scalar_field = read_mhd_scalar_field(scalar_field_file)
     
     # Assign the scalar field to the mesh cells
-    assign_scalar_to_mesh(mesh, scalar_field,label)
+    assign_scalar_to_mesh(mesh_scaled, scalar_field,label)
 
     # Write the modified mesh to a new file
-    write_mesh(mesh, output_file)
+    write_mesh(mesh_scaled, output_file)
 
     vtu_to_xdfm(output_file, label, coef=1e6)
 
@@ -121,6 +180,6 @@ if __name__ == "__main__":
         dti_file = f"{args.dti_folder}/{comp}_flipped.mhd"
         output_file = f"{args.output_folder}/{comp}_MNI.vtu"
 
-        main(mesh_file, dti_file, output_file, comp)
+        project_dti(mesh_file, dti_file, output_file, comp)
 
     
