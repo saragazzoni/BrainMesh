@@ -24,18 +24,41 @@ python3 ${SCRIPT_PATH}/concatenate_dwis.py \
 	--b3 ${INPUT_DIR}/${DWI3}.bval \
 	--r3 ${INPUT_DIR}/${DWI3}.bvec \
 	-o ${OUTPUT_DIR}/DWI
-echo "Cropping DWI PA image..."
-${ANIMA_BIN_PATH}/animaCropImage \
-	-i ${INPUT_DIR}/${DWI_PA} \
-	-o ${OUTPUT_DIR}/DWI_B0_Reversed.nii.gz \
-	-t 0 -T 0
+
+# echo "Cropping DWI PA image..."
+# ${ANIMA_BIN_PATH}/animaCropImage \
+# 	-i ${INPUT_DIR}/${DWI_PA} \
+# 	-o ${OUTPUT_DIR}/DWI_B0_Reversed.nii.gz \
+# 	-t 0 -T 0
+# echo "Preprocessing diffusion images..."
+# python3 ${ANIMA_SCRIPT_PATH}/diffusion/animaDiffusionImagePreprocessing.py \
+# 	-i ${OUTPUT_DIR}/DWI.nii.gz \
+# 	-t ${INPUT_DIR}/${T1} \
+# 	-r ${OUTPUT_DIR}/DWI_B0_Reversed.nii.gz \
+# 	-g ${OUTPUT_DIR}/DWI.bvec \
+# 	-b ${OUTPUT_DIR}/DWI.bval
+
+if [ -f "${INPUT_DIR}/${DWI_PA}" ]; then
+    echo "Cropping DWI PA image..."
+    ${ANIMA_BIN_PATH}/animaCropImage \
+        -i ${INPUT_DIR}/${DWI_PA} \
+        -o ${OUTPUT_DIR}/DWI_B0_Reversed.nii.gz \
+        -t 0 -T 0
+    REV_OPT="-r ${OUTPUT_DIR}/DWI_B0_Reversed.nii.gz"
+else
+    echo "[AVVISO] PA assente: correzione delle distorsioni basata sulla T1"
+    echo "${INPUT_DIR}" >> "${SCRIPT_PATH}/pazienti_senza_PA.txt"
+    REV_OPT=""
+fi
+
 echo "Preprocessing diffusion images..."
 python3 ${ANIMA_SCRIPT_PATH}/diffusion/animaDiffusionImagePreprocessing.py \
-	-i ${OUTPUT_DIR}/DWI.nii.gz \
-	-t ${INPUT_DIR}/${T1} \
-	-r ${OUTPUT_DIR}/DWI_B0_Reversed.nii.gz \
-	-g ${OUTPUT_DIR}/DWI.bvec \
-	-b ${OUTPUT_DIR}/DWI.bval
+    -i ${OUTPUT_DIR}/DWI.nii.gz \
+    -t ${INPUT_DIR}/${T1} \
+    ${REV_OPT} \
+    -g ${OUTPUT_DIR}/DWI.bvec \
+    -b ${OUTPUT_DIR}/DWI.bval
+
 echo "Copying marked T1 files..."
 cp ${INPUT_DIR}/*T1*_marked* ${OUTPUT_DIR}/
 echo "Estimating MCM parameters..."
