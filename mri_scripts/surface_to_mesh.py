@@ -1,5 +1,7 @@
 import SVMTK as svmtk
 import meshio
+from tumor_tags import tumor_tags 
+
 
 def remesh_surface(stl_input, output, L, n,
                    do_not_move_boundary_edges=False):
@@ -46,31 +48,55 @@ def create_brain_tumor_mesh(brain_stl, tumor_stl, output, resolution=16):
     smap = svmtk.SubdomainMap()
     smap.add("10", 1)
     smap.add("11", 2)
+    # smap.add("01", 2)
     # Create a tagged domain from the list of surfaces
     # and the map
     domain = svmtk.Domain(surfaces, smap)
        
     # Create and save the volume mesh 
     domain.create_mesh(resolution)
+    tags = list(domain.get_subdomains())
+    print("sottodomini:", tags)
+    if 2 not in tags:
+        print("ATTENZIONE: tumore non rilevato")
     domain.save(output)
 
-def from_mesh_to_adim_xdmf(meshfile, xdmf_file, L_car=1):
-    # Leggi il file .mesh con meshio
+# def from_mesh_to_adim_xdmf(meshfile, xdmf_file, L_car=1):
+#     # Leggi il file .mesh con meshio
+#     mesh = meshio.read(meshfile)
+
+#     # Estrai i dati
+#     points = mesh.points/L_car
+#     tetra  = {"tetra": mesh.cells_dict["tetra"]}
+#     subdomains = {"subdomains": [mesh.cell_data_dict["medit:ref"]["tetra"]]}
+
+#     if tetra is None:
+#         raise ValueError("The input mesh does not contain tetrahedral cells.")
+#   # Scrivi nel file XDMF
+#     xdmf_mesh = meshio.Mesh(points, tetra, cell_data=subdomains)
+#     meshio.write(xdmf_file, xdmf_mesh)
+#     print(f"Mesh salvata in {xdmf_file}")
+
+def from_mesh_to_adim_xdmf(meshfile, xdmf_file, L_car=1, tumor_stl=None):
     mesh = meshio.read(meshfile)
 
-    # Estrai i dati
-    points = mesh.points/L_car
-    tetra  = {"tetra": mesh.cells_dict["tetra"]}
-    subdomains = {"subdomains": [mesh.cell_data_dict["medit:ref"]["tetra"]]}
-
-    if tetra is None:
+    tets = mesh.cells_dict.get("tetra")
+    if tets is None:
         raise ValueError("The input mesh does not contain tetrahedral cells.")
 
+    if tumor_stl is not None:
+        # tag dal tumore: va fatto in mm, prima di adimensionalizzare
+        tags = tumor_tags(mesh.points, tets, tumor_stl)
+    else:
+        tags = mesh.cell_data_dict["medit:ref"]["tetra"]
 
-    # Scrivi nel file XDMF
-    xdmf_mesh = meshio.Mesh(points, tetra, cell_data=subdomains)
+    points = mesh.points / L_car
+    xdmf_mesh = meshio.Mesh(points, {"tetra": tets}, cell_data={"subdomains": [tags]})
     meshio.write(xdmf_file, xdmf_mesh)
     print(f"Mesh salvata in {xdmf_file}")
+
+
+  
 
 def mesh_from_single_surface(stl_input, output_mesh):
     # Load input STL file

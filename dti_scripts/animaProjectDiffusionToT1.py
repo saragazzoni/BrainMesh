@@ -96,5 +96,9 @@ command = [animaDir + "animaTensorApplyTransformSerie", "-i", modelImage, "-t",
            tmpB0ImagePrefix + "_all_tr.xml", "-o", modelImagePrefix + "_final.nrrd", "-g", t1Image]
 call(command)
 
+# Keep B0 -> T1 transforms (needed to chain them with a later registration, e.g. preop -> postop)
+shutil.copyfile(tmpB0ImagePrefix + "_rig_tr.txt", b0ImagePrefix + "_rig_tr.txt")
+shutil.copyfile(tmpB0ImagePrefix + "_corr_tr.nrrd", b0ImagePrefix + "_corr_tr.nrrd")
+
 shutil.rmtree(tmpFolder)
 #print(tmpFolder)

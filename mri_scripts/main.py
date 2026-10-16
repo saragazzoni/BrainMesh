@@ -6,26 +6,36 @@ import os
 with open('mri_scripts/params_config.json', 'r') as f:
     config = json.load(f)
 
-path = config["patient_path"]
-surf_folder = f"{path}/surf"
-mesh_folder = f"{path}/mesh"
-if not os.path.exists(mesh_folder):
-    os.makedirs(mesh_folder)
+folder_path = config["patient_path"]
 
-# Remesh and smoothen the surfaces
-volume_mesh = config["volume_mesh"]
-print("Smoothing Brain surface...")
-stm.remesh_surface(f"{surf_folder}/brain.stl", f"{surf_folder}/brain_remeshed.stl", volume_mesh["remesh_length_brain"], volume_mesh["remesh_iterations_brain"])
-stm.smoothen_surface(f"{surf_folder}/brain_remeshed.stl", f"{surf_folder}/brain_smootH.stl", n=volume_mesh["smoothen_iterations_brain"], eps=volume_mesh["smoothen_epsilon_brain"])
+for idx in range(3,4):
+    print(f"Processing patient {idx}...")
+    patient_folder = f"paz{idx}/postop"
+    surf_folder = f"{folder_path}/{patient_folder}/stl"
+    mesh_folder = f"{folder_path}/{patient_folder}/mesh"
+    if not os.path.exists(mesh_folder):
+        os.makedirs(mesh_folder)
 
-print("Smoothing Tumor surface...")
-stm.remesh_surface(f"{surf_folder}/tumor.stl", f"{surf_folder}/tumor_remeshed.stl", volume_mesh["remesh_length_tumor"], volume_mesh["remesh_iterations_tumor"])
-stm.smoothen_surface(f"{surf_folder}/tumor_remeshed.stl", f"{surf_folder}/tumor_smooth.stl", n=volume_mesh["smoothen_iterations_tumor"], eps=volume_mesh["smoothen_epsilon_tumor"])
+    # Remesh and smoothen the surfaces
+    volume_mesh = config["volume_mesh"]
+    print("Smoothing Brain surface...")
+    stm.remesh_surface(f"{surf_folder}/brain.stl", f"{surf_folder}/brain_remeshed.stl", volume_mesh["remesh_length_brain"], 
+                       volume_mesh["remesh_iterations_brain"])
+    stm.smoothen_surface(f"{surf_folder}/brain_remeshed.stl", f"{surf_folder}/brain_smooth.stl", 
+                         n=volume_mesh["smoothen_iterations_brain"], eps=volume_mesh["smoothen_epsilon_brain"])
 
-print("Generating Volume mesh...")
-stm.create_brain_tumor_mesh(f"{surf_folder}/brain_smooth.stl", f"{surf_folder}/tumor_smooth.stl", f"{mesh_folder}/brain_tumor.mesh")
-print("Converting to XDMF...")
-stm.from_mesh_to_adim_xdmf(f"{mesh_folder}/brain_tumor.mesh", f"{mesh_folder}/brain_tumor_adim.xdmf", volume_mesh["characteristic_length"])
+    print("Smoothing Tumor surface...")
+    stm.remesh_surface(f"{surf_folder}/tumor.stl", f"{surf_folder}/tumor_remeshed.stl", volume_mesh["remesh_length_tumor"], 
+                       volume_mesh["remesh_iterations_tumor"])
+    stm.smoothen_surface(f"{surf_folder}/tumor_remeshed.stl", f"{surf_folder}/tumor_smooth.stl", 
+                         n=volume_mesh["smoothen_iterations_tumor"], eps=volume_mesh["smoothen_epsilon_tumor"])
+
+    print("Generating Volume mesh...")
+    stm.create_brain_tumor_mesh(f"{surf_folder}/brain_smooth.stl", f"{surf_folder}/tumor_smooth.stl", 
+                                            f"{mesh_folder}/brain_tumor.mesh", resolution=volume_mesh["mesh_resolution"])
+    print("Converting to XDMF...")
+    stm.from_mesh_to_adim_xdmf(f"{mesh_folder}/brain_tumor.mesh", f"{mesh_folder}/brain_tumor_adim.xdmf", 
+                               volume_mesh["characteristic_length"])#, tumor_stl=f"{surf_folder}/tumor_smooth.stl")
 
 
 # # single surface mesh example

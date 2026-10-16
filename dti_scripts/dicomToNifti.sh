@@ -43,7 +43,7 @@
 
 # Controllo argomenti
 if [ "$#" -lt 3 ]; then
-  echo "Uso: $0 pathToPatient examFolder separationTag"
+  echo "Uso: $0 pathToPatient examFolder separationTag [imagesFolderName]"
   echo "Esempio: $0 /path/to/patient 2025_10_10 _"
   exit 1
 fi
@@ -51,7 +51,7 @@ fi
 rootdir=$1          # cartella del paziente
 examdir=$2          # nome della sottocartella dell’esame
 sep=$3              # separatore per la data
-imagedir="${rootdir}/images"
+imagedir="${rootdir}/${4:-images}"   # cartella di output (default: images)
 
 # Reset cartella immagini
 rm -fr "$imagedir"
