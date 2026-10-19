@@ -1,0 +1,26 @@
+paziente,exam_folder,exam_date,dti_series,basename,postop_folder,postop_date,postop_basename
+# Una riga per paziente. Campi vuoti = valore di default (vedi run_all_dti.sh).
+# exam_date / postop_date vuoti = ricavate dal nome della cartella (Rm_10-7-18 -> 2018-07-10).
+# postop_folder: auto = l'unica cartella postop* del paziente; vuoto = solo preop.
+# esempio con serie DTI e T1 diverse dal default:
+# paz5,Rm_2-3-19,,DTI_40_dir_B1500 DTI_64_dir_B3000,T1_3D_AX_mdc,auto,,NEURONAV.T1
+paz1, Rm_13-6-18,,,,auto,,
+paz2, Rm_28-6-18,,,,auto,,
+paz4, Rm_5-7-17,,,,auto,,
+paz5, Rm_1-8-17,,,,auto,,NEURONAV.T1
+paz6, Rm_6-2-18,,,,auto,,NEURONAV.T1
+paz7, Rm_7-2-18,,,,auto,,NEURONAV.T1
+paz8, Rm_21-5-18,,,,auto,,
+paz9, Rm_18-7-17,,,,auto,,NEURONAV.T1
+paz10, Rm_7-11-17,,,,auto,,NEURONAV.T1
+paz11, Rm_3-11-17,,,,auto,,
+paz12, Rm_21-11-17,,,,auto,,
+paz13, Rm_14-1-19,,,,auto,,
+paz14, Rm_31-7-18,,,,auto,,T1_3D_TFE_ricostruzioni
+paz15, Rm_5-6-18,,,,auto,,
+paz16, Rm_23-5-17,,DTI_40_dir_B1500 DTI_64_dir_B3000,,auto,,NEURONAV.T1_mdc_11
+paz17, Rm_26-6-17,,,,auto,,NEURONAV.T1_mdc_11
+paz19, Rm_15-5-18,,,,auto,,
+paz20, Rm_19-12-17,,,,auto,,
+paz21, Rm_27-3-18,,,,auto,,
+paz22, Rm_26-2-18,,,,auto,,

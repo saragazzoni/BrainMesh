@@ -8,14 +8,17 @@
 
 # ======== 1. CONFIGURATION ========
 # MODIFY ONLY THIS SECTION
+# The per-patient values (path, exam folders/dates, DTI series, masks) can also be passed from
+# outside as environment variables: run_all_dti.sh does this for all patients listed in a table.
+# A value passed from outside wins over the one written here.
 
 # Path to patient directory (DICOM)
-PATH_TO_PATIENT="/Users/saragazzoni/Desktop/Data/Pazienti/paz3"
-BASENAME="T1_3D_AX_mdc"  # Base name of the reference MRI file (without extension)
-EXAM_FOLDER="Rm_10-7-18"  # Name of the exam folder to process
-EXAM_DATE="2018-07-10"  # Date of the exam to process (format: YYYY-MM-DD)
+PATH_TO_PATIENT="${PATH_TO_PATIENT:-/Users/saragazzoni/Desktop/Data/Pazienti/paz3}"
+BASENAME="${BASENAME:-T1_3D_AX_mdc}"  # Base name of the reference MRI file (without extension)
+EXAM_FOLDER="${EXAM_FOLDER:-Rm_10-7-18}"  # Name of the exam folder to process
+EXAM_DATE="${EXAM_DATE:-2018-07-10}"  # Date of the exam to process (format: YYYY-MM-DD)
 
-DTI_SERIES="DTI_20_dir_B700 DTI_40_dir_B1500 DTI_64_dir_B3000"
+DTI_SERIES="${DTI_SERIES:-DTI_20_dir_B700 DTI_40_dir_B1500 DTI_64_dir_B3000}"
 
 # Separation tag for exams dates (e.g., "-" in "2023-01-15")
 SEPARATION_TAG="-"
@@ -31,11 +34,11 @@ PATH_TO_MESH_FOLDER="${PATH_TO_PATIENT}"
 # (Optional) Map the preop DTI onto the POSTOP exam. Leave POSTOP_EXAM_FOLDER empty to disable.
 # The postop exam is converted to NIfTI in ${PATH_TO_PATIENT}/images_postop/<date>.
 # The T1 must be the same series used to build the postop mesh.
-POSTOP_EXAM_FOLDER="postop_20-7-18"   # DICOM exam folder NAME inside PATH_TO_PATIENT (like EXAM_FOLDER), e.g. "Rm_10-4-18"
-POSTOP_EXAM_DATE="2018-07-20"     # date of the postop exam (format: YYYY-MM-DD), e.g. "2018-04-10"
-POSTOP_BASENAME="T1_3D_AX_mdc"  # name of the postop T1 after conversion (without extension)
-PREOP_TUMOR_MASK="/Users/saragazzoni/Desktop/Data/raidionics_out/paz3/tumor_prob.nii.gz"     # tumor segmentation on the PREOP T1 (binary or probability map), optional
-POSTOP_CAVITY_MASK="/Users/saragazzoni/Desktop/Data/raidionics_out/paz3/postop/cavity_mask.nii.gz"   # cavity segmentation on the POSTOP T1 (binary or probability map), optional
+POSTOP_EXAM_FOLDER="${POSTOP_EXAM_FOLDER-postop}"   # DICOM exam folder NAME inside PATH_TO_PATIENT (like EXAM_FOLDER), e.g. "Rm_10-4-18"
+POSTOP_EXAM_DATE="${POSTOP_EXAM_DATE-2018-07-20}"     # date of the postop exam (format: YYYY-MM-DD), e.g. "2018-04-10"
+POSTOP_BASENAME="${POSTOP_BASENAME:-T1_3D_AX_mdc}"  # name of the postop T1 after conversion (without extension)
+PREOP_TUMOR_MASK="${PREOP_TUMOR_MASK-/Users/saragazzoni/Desktop/Data/raidionics_out/paz3/tumor_prob.nii.gz}"     # tumor segmentation on the PREOP T1 (binary or probability map), optional
+POSTOP_CAVITY_MASK="${POSTOP_CAVITY_MASK-/Users/saragazzoni/Desktop/Data/raidionics_out/paz3/postop/cavity_mask.nii.gz}"   # cavity segmentation on the POSTOP T1 (binary or probability map), optional
 POSTOP_LINEAR="rigid"   # rigid | affine
 POSTOP_NONLINEAR=1      # 1 = masked non-linear registration, 0 = linear only
 POSTOP_MARGIN_MM=5      # dilation (mm) of the region excluded from the registration
@@ -50,7 +53,7 @@ BRAINMESH_PYTHON="/Users/saragazzoni/anaconda3/envs/brain-mesh/bin/python"
 #  - preop DTI processing          (main.sh, tensor estimation, projection onto the T1)
 #                                  if images/<EXAM_DATE>/processed/DWI_Tensors_final.nrrd exists
 # The postop projection (step 4) is always redone.
-SKIP_DONE=1
+SKIP_DONE="${SKIP_DONE:-1}"
 
 # ======== 2. FUNZIONI UTILI ========
 log() {
