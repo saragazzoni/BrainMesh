@@ -13,13 +13,13 @@ paz7, Rm_7-2-18,,,,auto,,NEURONAV.T1
 paz8, Rm_21-5-18,,,,auto,,
 paz9, Rm_18-7-17,,,,auto,,NEURONAV.T1
 paz10, Rm_7-11-17,,,,auto,,NEURONAV.T1
-paz11, Rm_3-11-17,,,,auto,,
+paz11, Rm_31-10-17,,,,auto,,
 paz12, Rm_21-11-17,,,,auto,,
 paz13, Rm_14-1-19,,,,auto,,
-paz14, Rm_31-7-18,,,,auto,,T1_3D_TFE_ricostruzioni
+paz14, Rm_31-7-18,,,,auto,,T1_3D_TFE_ricostruzioni_CLEAR
 paz15, Rm_5-6-18,,,,auto,,
-paz16, Rm_23-5-17,,DTI_40_dir_B1500 DTI_64_dir_B3000,,auto,,NEURONAV.T1_mdc_11
-paz17, Rm_26-6-17,,,,auto,,NEURONAV.T1_mdc_11
+paz16, Rm_23-5-17,,DTI_40_dir_B1500 DTI_64_dir_B3000,,auto,,NEURONAV.T1_mdc
+paz17, Rm_26-6-17,,,,auto,,NEURONAV.T1_mdc
 paz19, Rm_15-5-18,,,,auto,,
 paz20, Rm_19-12-17,,,,auto,,
 paz21, Rm_27-3-18,,,,auto,,

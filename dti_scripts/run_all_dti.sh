@@ -31,6 +31,7 @@
 PATIENTS_ROOT="/Users/saragazzoni/Desktop/Data/Pazienti"
 RAIDIONICS_OUT="/Users/saragazzoni/Desktop/Data/raidionics_out"
 LOG_DIR="${PATIENTS_ROOT}/log_dti"
+SHOW_OUTPUT="${SHOW_OUTPUT:-0}"   # 1 = mostra anche a schermo tutti i messaggi della pipeline (oltre al log)
 # ----------------------------------------------
 
 CSV="$1"
@@ -80,9 +81,12 @@ while IFS=, read -r pz exam_folder exam_date dti_series t1_basename postop_folde
     problem=""
     [ -d "$patient_dir" ] || problem="cartella $patient_dir non trovata"
     [ -z "$problem" ] && [ -z "$exam_folder" ] && problem="exam_folder vuoto nella tabella"
-    [ -z "$problem" ] && [ ! -d "$patient_dir/$exam_folder" ] && problem="esame preop $patient_dir/$exam_folder non trovato"
     if [ -z "$problem" ] && [ -z "$exam_date" ]; then
         exam_date=$(date_from_folder "$exam_folder") || problem="data preop non ricavabile da '$exam_folder': scrivila nella tabella"
+    fi
+    # servono i DICOM oppure le immagini gia' convertite (images/<data>)
+    if [ -z "$problem" ] && [ ! -d "$patient_dir/$exam_folder" ] && [ ! -d "$patient_dir/images/$exam_date" ]; then
+        problem="ne' DICOM ($exam_folder) ne' immagini convertite (images/$exam_date) per il preop"
     fi
 
     if [ -z "$problem" ] && [ "$postop_folder" = "auto" ]; then
@@ -97,9 +101,11 @@ while IFS=, read -r pz exam_folder exam_date dti_series t1_basename postop_folde
         fi
     fi
     if [ -z "$problem" ] && [ -n "$postop_folder" ]; then
-        [ -d "$patient_dir/$postop_folder" ] || problem="esame postop $patient_dir/$postop_folder non trovato"
-        if [ -z "$problem" ] && [ -z "$postop_date" ]; then
+        if [ -z "$postop_date" ]; then
             postop_date=$(date_from_folder "$postop_folder") || problem="data postop non ricavabile da '$postop_folder': scrivila nella tabella"
+        fi
+        if [ -z "$problem" ] && [ ! -d "$patient_dir/$postop_folder" ] && [ ! -d "$patient_dir/images_postop/$postop_date" ]; then
+            problem="ne' DICOM ($postop_folder) ne' immagini convertite (images_postop/$postop_date) per il postop"
         fi
     fi
     if [ -n "$problem" ]; then
@@ -112,7 +118,14 @@ while IFS=, read -r pz exam_folder exam_date dti_series t1_basename postop_folde
     cavity_mask="${RAIDIONICS_OUT}/${pz}/postop/cavity_mask.nii.gz"
     [ -f "$tumor_mask" ] || { echo "   [AVVISO] manca $tumor_mask: proiezione senza maschera del tumore"; tumor_mask=""; }
     if [ -n "$postop_folder" ] && [ ! -f "$cavity_mask" ]; then
-        echo "   [AVVISO] manca $cavity_mask: proiezione senza maschera della cavita'"; cavity_mask=""
+        cavity_prob="${RAIDIONICS_OUT}/${pz}/postop/cavity_prob.nii.gz"
+        if [ -f "$cavity_prob" ]; then
+            echo "   [AVVISO] manca cavity_mask.nii.gz: uso cavity_prob.nii.gz (binarizzata a 0.5)."
+            echo "            Controlla questo paziente: di solito la maschera manca se la cavita' non e' stata trovata."
+            cavity_mask="$cavity_prob"
+        else
+            echo "   [AVVISO] manca $cavity_mask: proiezione senza maschera della cavita'"; cavity_mask=""
+        fi
     fi
     [ -z "$postop_folder" ] && { cavity_mask=""; postop_date=""; }
 
@@ -127,9 +140,10 @@ while IFS=, read -r pz exam_folder exam_date dti_series t1_basename postop_folde
     DTI_SERIES="$dti_series" BASENAME="$t1_basename" \
     POSTOP_EXAM_FOLDER="$postop_folder" POSTOP_EXAM_DATE="$postop_date" POSTOP_BASENAME="$postop_basename" \
     PREOP_TUMOR_MASK="$tumor_mask" POSTOP_CAVITY_MASK="$cavity_mask" \
-        bash ./pipeline_dti.sh < /dev/null > "$log" 2>&1     # stdin chiuso: non "mangia" le righe della tabella
-    status=$?
-    minutes=$(( ($(date +%s) - t0) / 60 ))
+        bash ./pipeline_dti.sh < /dev/null > >(if [ "$SHOW_OUTPUT" = "1" ]; then tee "$log"; else cat > "$log"; fi) 2>&1
+    status=$?                                            # stdin chiuso: la pipeline non "mangia" le righe della tabella
+    sleep 1                                              # lascia finire di scrivere il log
+    t1=$(date +%s); minutes=$(( (t1 - t0) / 60 ))
     if [ $status -eq 0 ]; then
         echo "   OK ($minutes min)"
         OK+=("$pz")
@@ -141,6 +155,8 @@ while IFS=, read -r pz exam_folder exam_date dti_series t1_basename postop_folde
 done < "$CSV"
 
 echo "=================================================================="
-echo "Finito in $(( ($(date +%s) - START_ALL) / 60 )) min: ${#OK[@]} riusciti, ${#FAILED[@]} falliti, ${#SKIPPED[@]} saltati"
+END_ALL=$(date +%s)
+TOTAL_MIN=$(( (END_ALL - START_ALL) / 60 ))
+echo "Finito in ${TOTAL_MIN} min: ${#OK[@]} riusciti, ${#FAILED[@]} falliti, ${#SKIPPED[@]} saltati"
 [ ${#FAILED[@]} -gt 0 ] && echo "Falliti: ${FAILED[*]}  (vedi i log in $LOG_DIR)"
 for s in "${SKIPPED[@]}"; do echo "Saltato: $s"; done

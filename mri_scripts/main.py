@@ -8,7 +8,7 @@ with open('mri_scripts/params_config.json', 'r') as f:
 
 folder_path = config["patient_path"]
 
-for idx in range(3,4):
+for idx in range(17,18):
     print(f"Processing patient {idx}...")
     patient_folder = f"paz{idx}/postop"
     surf_folder = f"{folder_path}/{patient_folder}/stl"
@@ -25,7 +25,7 @@ for idx in range(3,4):
                          n=volume_mesh["smoothen_iterations_brain"], eps=volume_mesh["smoothen_epsilon_brain"])
 
     print("Smoothing Tumor surface...")
-    stm.remesh_surface(f"{surf_folder}/tumor.stl", f"{surf_folder}/tumor_remeshed.stl", volume_mesh["remesh_length_tumor"], 
+    stm.remesh_surface(f"{surf_folder}/cavity.stl", f"{surf_folder}/tumor_remeshed.stl", volume_mesh["remesh_length_tumor"], 
                        volume_mesh["remesh_iterations_tumor"])
     stm.smoothen_surface(f"{surf_folder}/tumor_remeshed.stl", f"{surf_folder}/tumor_smooth.stl", 
                          n=volume_mesh["smoothen_iterations_tumor"], eps=volume_mesh["smoothen_epsilon_tumor"])
